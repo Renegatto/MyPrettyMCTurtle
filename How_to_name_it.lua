@@ -33,48 +33,47 @@ local calculations = {
     direction_as_angle,
     rotate_direction,
 }
-calculations.__index = calculations
- 
-function calculations:relative_dir_to_absolute(dir)
-    return Direction
+function nat(x)
+    return (x >= 0 and x) or 0
 end
- 
-function calculations:direction_as_angle(dir) --0,1,0,0 -> 0100
-    return dir.north + dir.east*10 + dir.south*100 + dir.west*1000
+local Direction = {}
+Direction.new = function(n,e,s,w) 
+  return {n,e,s,w}
+end
+Direction.from_angle = function(ang)
+  return Direction.new(
+    nat(math.floor(ang/1000)),
+    nat(9-math.floor(ang/100)),
+    nat(99-math.floor(ang/10)),
+    nat(999-ang)
+  )
+end
+Direction.as_angle = function(dir) --0,1,0,0 -> 0100
+    return dir[4] + dir[3]*10 + dir[2]*100 + dir[1]*1000
 end
     
-function calculations:rotate_direction(rotating, on)
-    return math.fmod(
-    (calculations.direction_as_angle(dir1) + 
-    calculations.direction_as_angle(dir2)) / 1000
-    )
+Direction.rotate = function(rotating, on)
+    return Direction.from_angle(math.fmod(
+    (Direction.as_angle(dir1) + 
+     Direction.as_angle(dir2)) / 1000))
 end
+Direction.relative_to_absolute = function(relative,absolute)
+    return Direction.rotate(absolute,relative)
+end 
+
 table.zipi = function(a, b)
     local result = {}
     for i, v in ipairs(a) do
       result[i] = {a[i], b[i]}
     end
     return result
-end
+end              
 table.map = function(fn,t)
     local result = {}
     for k, v in pairs(t) do
       result[k] = fn(v)
     end
     return result 
-end
-table.mmap = function(fn,t)
-    for k, v in pairs(t) do 
-      t[k] = fn(v) 
-    end
-    return t
-end
-table.imap = function(fn,t)
-    local result = {}
-    for i, v in ipairs(t) do
-      result[i] = fn(i, v)
-    end
-    return result
 end
 function calculations:offset_between_points(source,destination) -- (Point, Point) -> Point
     return table.map(
@@ -105,31 +104,22 @@ table.project = function(fn,xs)
    end
    return result
 end
-
-function Map(setup)
-    
-    local absolute_position = function(x,y,z,data)
-      return calculations.offset_between_points(
-        setup.starting_position, 
-        Point(x,y))
-    end
-   
-    local result = {
-        state = table.project(absolute_position, setup.goal),
- 
-        item = function(x,y,z) return result.state[x][y][z] end,
- 
-        update = function(x,y,z,value)
-            set_coordinate(
-              result.state, x, y, z, value)
-        end,
-        
-    }
-    return result
+test = {}
+test.rotates = function()
+   local randang = (function()
+     local choice = math.random(0,3)
+     print(choice)
+     return math.floor(math.pow(10,choice))
+   end)
+   local ang = randang()
+   print(table.unpack(Direction.from_angle(ang)))
+   local k =  {
+     Direction.as_angle(
+       Direction.from_angle(ang)), ang}
+   print(k[1],k[2])
+   assert(k[1]==k[2],"as_angle or from_angle failed test")
 end
-  
-    
-function test()
+function testt()
     local should_build = {
         {
           {1,1,1,1,1},
@@ -148,14 +138,7 @@ function test()
           {1,1,1,1,0},
         }, 
     }
-    
-    local map = Map(
-      {
-        goal = should_build, 
-        starting_position = Point(2,1,7),
-        current_location = Point(-218,534,56),
-      }
-    )
-    print(map.state)
  end
- test()
+ for x=0,100 do
+   test.rotates()
+ end
