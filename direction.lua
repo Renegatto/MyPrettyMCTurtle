@@ -21,34 +21,34 @@ Direction.vertical = {
       ["DOWN"] = 0,
 }
 function show(s,x) print(s..tostring(x)) return x end
-Direction.new = function(n,e,s,w) 
+function Direction.new(n,e,s,w) 
   return {n,e,s,w}
 end
-Direction.by_name = function(name) 
+function Direction.by_name(name) 
   return Direction.horisontal[name]
 end
-Direction.new_horisontal = function(up, down)return up end
-Direction.horisontal_by_name = function(name) return Direction.vertical[name] end
-Direction.from_angle = function(ang) --test
+function Direction.new_horisontal(up, down)return up end
+function Direction.horisontal_by_name(name) return Direction.vertical[name] end
+function Direction.from_angle(ang) --test
   local result = {[0] = 0,[1] = 0,[2] = 0,[3] = 0}
   result[ang] = 1
   return result
 end
-Direction.as_angle = function(dir)--test
+function Direction.as_angle(dir)--test
     return dir[1]*1 + dir[2]*2 + dir[3]*3
 end
-Direction.rotate_angles = function(rotating,on) --test
+function Direction.rotate_angles(rotating,on) --test
     print(string.format("rotating %s ; on %s ; sum %s ; result %s",rotating,on,rotating+on,math.fmod(rotating + on, 3)))
     return math.fmod(rotating + on, 4)
 end
-Direction.rotate = function(rotating, on)--test
+function Direction.rotate(rotating, on)--test
     return Direction.from_angle(
       Direction.rotate_angles(
         Direction.as_angle(rotating),
         Direction.as_angle(on)
       ))
 end
-Direction.relative_to_absolute = function(relative,absolute)
+function Direction.relative_to_absolute(relative,absolute)
     return Direction.rotate(absolute,relative)
 end 
 
