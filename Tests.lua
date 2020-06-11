@@ -25,44 +25,75 @@ function ang_conversions()
    
 end
 function const(x) return function(ignored) return x end end
-function rotating_has_identity_test()
+function rotating_identity_test()
   local rotates_for_identity = {
     {rotates = 4,   ang = Direction.from_angle(1)},
     {rotates = 2,   ang = Direction.from_angle(2)},
     {rotates = 4,   ang = Direction.from_angle(3)},
     {rotates = 1,   ang = Direction.from_angle(0)},
   }
+  local rotates_for_not_identity = {
+    {rotates = 3,   ang = Direction.from_angle(1)},
+    {rotates = 1,   ang = Direction.from_angle(2)},
+    {rotates = 2,   ang = Direction.from_angle(3)},
+  } 
   
   local rand = function() return Direction.from_angle(math.random(0,3)) end
   
   local rnd = rand()
-  
-  local rotates = 
+
+--: [x:[ang -> y:ang]] where fold apply z x = z
+  local rotation_sequences = function(rotations) return-- result of 
    table.map(            -- [[(int -> int)]]
-     function(identity)return
+     function(rotates)return
 
        table.repeat(     -- (a -> (Direction -> Direction)) -> [int] -> [(Direction -> Direction)]
-         apply(
-           flip(curry(Direction.rotate))(identity.ang)),
+         flip(curry(Direction.rotate))(rotates.ang),
          ),
-         identity.rotates
+         rotates.rotates
        )
     end, 
-    rotates_for_identity
-  )
-  local rotate_results = 
+    rotations
+   )
+  end
+
+  local rotation_seqs_that_folds_into_identity =
+     rotation_sequences(rotations_for_identity)
+  local rotation_seqs_that_not_folds_into_identity =
+     rotation_sequences(rotations_for_not_identity)
+
+  local identity_rotate_results = 
     map(
-       flip(curry(table.fold))(rnd),
-       rotates
+       flip(curry(table.fold(apply))(rnd),
+       rotation_seqs_that_folds_into_identity
+    )
+  local non_identity_rotate_results = 
+    map(
+       flip(curry(table.fold(apply))(rnd),
+       rotation_seqs_that_not_folds_into_identity
     )
 
   table.map(
-    function(x) assert(x == Direction.as_angle(rnd), "test failed "..tostring(x).."; "..tostring(Direction.as_angle(rnd)) ) end,
+    function(x) assert(
+       x == Direction.as_angle(rnd), 
+       string.format("Fail: Rotating has no identity that must be. Expected angle %s, got %s.", Direction.as_angle(rnd)
+     ))
+    end,
     table.map(
       Direction.as_angle,
-      rotates_results
+      identity_rotate_results
     )
   )
+  table.map(
+    function(x) assert(
+       x != Direction.as_angle(rnd), 
+       string.format("test failed "..tostring(x).."; "..tostring(Direction.as_angle(rnd)) ) end,
+    table.map(
+      Direction.as_angle,
+      non_identity_rotate_results
+    )
+  )
+
 end
 
 --print(
