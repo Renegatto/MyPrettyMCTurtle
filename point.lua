@@ -1,3 +1,5 @@
+require "table_extension"
+
 Point = {}
 
 function Point.new(x, y, z) return {x, y, z} end
