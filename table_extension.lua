@@ -46,13 +46,24 @@ table.range = function(from,to)--+
   end
   return result
 end
-table.project = function(fn,xs)
+function table.iupdate3(of,x,y,z,val)
+   if not of[x] then
+     of[x] = {[y] = {[z] = val}}
+   else
+     if not of[x][y] then
+       of[x][y] = {[z] = val}
+     else
+       of[x][y][z] = val
+     end
+   end
+end
+table.iproject3 = function(fn,xs)
   local result = {}
   for x, ys in ipairs(xs) do
       for y, zs in ipairs(ys) do
         for z, val in ipairs(zs) do
           local new_x, new_y, new_z = table.unpack(fn(x,y,z))
-          set_coordinate(result,new_x,new_y,new_z,val) 
+          table.iupdate3(result,new_x,new_y,new_z,val) 
         end
       end
    end
