@@ -73,7 +73,7 @@ function rotating_identity_test()
        rotation_seqs_that_not_folds_into_identity
     )
 
-  table.map(
+  table.map( -- checking identity cases
     function(x) assert(
        x == Direction.as_angle(rnd), 
        string.format("Fail: Rotating has no identity that must be. Expected angle %s, got %s.",x,Direction.as_angle(rnd)
@@ -84,10 +84,12 @@ function rotating_identity_test()
       identity_rotate_results
     )
   )
-  table.map(
+  table.map( -- checking non identity cases
     function(x) assert(
        x != Direction.as_angle(rnd), 
-       string.format("test failed "..tostring(x).."; "..tostring(Direction.as_angle(rnd)) ) end,
+       string.format("Fail: Rotating has wrong identity. Expected, that angle %s not equal to %s.",x,Direction.as_angle(rnd)
+     ))
+    end, 
     table.map(
       Direction.as_angle,
       non_identity_rotate_results
@@ -96,16 +98,6 @@ function rotating_identity_test()
 
 end
 
---print(
---  table.fold(
---    function(acc,fn1)return fn1(acc) end,
---    table.map(
---      const(function(acc)return acc+acc end), 
---      table.range(1,100)
---    ),
---    1
---   )
---)
 for x=0,1000 do
    ang_conversions()
    rotate_test()
