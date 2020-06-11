@@ -76,7 +76,7 @@ function rotating_identity_test()
   table.map(
     function(x) assert(
        x == Direction.as_angle(rnd), 
-       string.format("Fail: Rotating has no identity that must be. Expected angle %s, got %s.", Direction.as_angle(rnd)
+       string.format("Fail: Rotating has no identity that must be. Expected angle %s, got %s.",x,Direction.as_angle(rnd)
      ))
     end,
     table.map(
