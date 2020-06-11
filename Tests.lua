@@ -1,4 +1,4 @@
-require "Calculations"
+require "direction"
 
 function show(s,x) print(s..tostring(x)) return x end
 function showt(s,t) 
