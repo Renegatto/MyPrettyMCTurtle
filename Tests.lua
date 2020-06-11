@@ -1,5 +1,7 @@
+require "table_extension"
 require "direction"
-
+require "functional"
+function apply(x,f) return f(x) end
 function show(s,x) print(s..tostring(x)) return x end
 function showt(s,t) 
   for k, v in pairs(t) do
@@ -26,13 +28,13 @@ function ang_conversions()
 end
 function const(x) return function(ignored) return x end end
 function rotating_identity_test()
-  local rotates_for_identity = {
+  local rotations_for_identity = {
     {rotates = 4,   ang = Direction.from_angle(1)},
     {rotates = 2,   ang = Direction.from_angle(2)},
     {rotates = 4,   ang = Direction.from_angle(3)},
     {rotates = 1,   ang = Direction.from_angle(0)},
   }
-  local rotates_for_not_identity = {
+  local rotations_for_not_identity = {
     {rotates = 3,   ang = Direction.from_angle(1)},
     {rotates = 1,   ang = Direction.from_angle(2)},
     {rotates = 2,   ang = Direction.from_angle(3)},
@@ -40,57 +42,53 @@ function rotating_identity_test()
   
   local rand = function() return Direction.from_angle(math.random(0,3)) end
   
+  local rotate = curry2(Direction.rotate) -- ang -> ang
+  
   local rnd = rand()
 
 --: [x:[ang -> y:ang]] where fold apply z x = z
-  local rotation_sequences = function(rotations) return-- result of 
-   table.map(            -- [[(int -> int)]]
-     function(rotates)return
 
-       table.repeat(     -- (a -> (Direction -> Direction)) -> [int] -> [(Direction -> Direction)]
-         flip(curry(Direction.rotate))(rotates.ang),
-         ),
-         rotates.rotates
-       )
-    end, 
-    rotations
-   )
-  end
+  local rotation_sequences = cmap(  -- [Rotate] -> [[(ang -> ang)]]
+      function(rotates)return       -- Rotate -> [(ang->ang)]
+  
+         table.repeat1(             -- [f:(ang->ang)] where all f are structurally equal
+           rotate(rotates.ang),     -- ang -> ang
+           rotates.rotates          -- int
+         )
+         
+      end
+  )
 
-  local rotation_seqs_that_folds_into_identity =
+  local rotation_seqs_that_folds_into_identity =      -- [[ang->ang]]
      rotation_sequences(rotations_for_identity)
-  local rotation_seqs_that_not_folds_into_identity =
+  local rotation_seqs_that_not_folds_into_identity =  -- [[ang->ang]]
      rotation_sequences(rotations_for_not_identity)
 
-  local identity_rotate_results = 
-    map(
-       flip(curry(table.fold(apply))(rnd),
-       rotation_seqs_that_folds_into_identity
-    )
-  local non_identity_rotate_results = 
-    map(
-       flip(curry(table.fold(apply))(rnd),
-       rotation_seqs_that_not_folds_into_identity
-    )
+  local rotate_results = cmap(cfold(apply)(rnd))     -- [[ang->ang]] -> [ang]
 
-  table.map( -- checking identity cases
-    function(x) assert(
+  local identity_rotate_results     = rotate_results(rotation_seqs_that_folds_into_identity)      --[ang]
+  local non_identity_rotate_results = rotate_results(rotation_seqs_that_not_folds_into_identity)  --[ang]
+
+  map( -- checking identity cases
+    function(x) assert( -- ang -> Assert ang
        x == Direction.as_angle(rnd), 
-       string.format("Fail: Rotating has no identity that must be. Expected angle %s, got %s.",x,Direction.as_angle(rnd)
-     ))
+       string.format("Fail: Rotating has no identity that must be. Expected angle %s, got %s.",
+          x,
+          Direction.as_angle(rnd)))
     end,
-    table.map(
+    map(
       Direction.as_angle,
       identity_rotate_results
     )
   )
-  table.map( -- checking non identity cases
+  map( -- checking non identity cases
     function(x) assert(
-       x != Direction.as_angle(rnd), 
-       string.format("Fail: Rotating has wrong identity. Expected, that angle %s not equal to %s.",x,Direction.as_angle(rnd)
-     ))
+       x ~= Direction.as_angle(rnd), 
+       string.format("Fail: Rotating has wrong identity. Expected, that angle %s not equal to %s.", 
+          x, 
+          Direction.as_angle(rnd)))
     end, 
-    table.map(
+    map(
       Direction.as_angle,
       non_identity_rotate_results
     )
@@ -100,6 +98,6 @@ end
 
 for x=0,1000 do
    ang_conversions()
-   rotate_test()
+   rotating_identity_test()
 end
 

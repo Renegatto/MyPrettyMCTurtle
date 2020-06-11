@@ -33,7 +33,7 @@ table.reduce = function(fn,t)--+
   end
   return acc
 end
-table.fold = function(fn2,t,acc)--+
+table.fold = function(fn2,acc,t)--+
   for k,v in ipairs(t) do
     acc = fn2(acc,v)
   end
@@ -69,3 +69,12 @@ table.iproject3 = function(fn,xs)
    end
    return result
 end
+table.repeat1 = function(t,times)
+  result = {}
+  for i=1, times do
+    result[i] = t
+  end
+  return result
+end
+
+
