@@ -25,7 +25,7 @@ function ang_conversions()
    
 end
 function const(x) return function(ignored) return x end end
-function rotate_test()
+function rotating_has_identity_test()
   local rotates_for_identity = {
     {rotates = 4,   ang = Direction.from_angle(1)},
     {rotates = 2,   ang = Direction.from_angle(2)},
