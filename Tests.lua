@@ -37,33 +37,29 @@ function rotate_test()
   
   local rnd = rand()
   
-  local rotates_results = table.map( -- [[(int -> int)]]
-    function(identity)
-      return table.fold(  -- (Direction -> (Direction -> Direction) -> Direction) 
-                          -- -> [(Direction -> Direction)]
-                          -- -> Direction
-                          -- -> Direction
-        function(acc,fn) return fn(acc) end,
-        
-        table.map( -- (a -> (Direction -> Direction)) -> [int] -> [(Direction -> Direction)]
-        
-          const(function(acc) -- (a -> Direction -> Direction)
-            return Direction.rotate(
-                acc, 
-                identity.ang
-              )
-          end),
-          table.range(1,identity.rotates)
-        ),
-        rnd
-    )
+  local rotates = 
+   table.map(            -- [[(int -> int)]]
+     function(identity)return
+
+       table.repeat(     -- (a -> (Direction -> Direction)) -> [int] -> [(Direction -> Direction)]
+         apply(
+           flip(curry(Direction.rotate))(identity.ang)),
+         ),
+         identity.rotates
+       )
     end, 
     rotates_for_identity
   )
+  local rotate_results = 
+    map(
+       flip(curry(table.fold))(rnd),
+       rotates
+    )
+
   table.map(
     function(x) assert(x == Direction.as_angle(rnd), "test failed "..tostring(x).."; "..tostring(Direction.as_angle(rnd)) ) end,
     table.map(
-      function(x) return Direction.as_angle(x) end,
+      Direction.as_angle,
       rotates_results
     )
   )
