@@ -1,24 +1,6 @@
 
 function add(a,b)return a+b end
-function set_coordinate(of,x,y,z,val)
-   if not of[x] then
-     of[x] = {[y] = {[z] = val}}
-   else
-     if not of[x][y] then
-       of[x][y] = {[z] = val}
-     else
-       of[x][y][z] = val
-     end
-   end
-end
 
-Point = {}
-Point.new = function(x, y, z) return {x, y, z} end
-Point.offset_between = function(source,destination) -- (Point, Point) -> Point
-    return table.map(
-      function(a,b)return a-b end, 
-      table.zipi(source,destination))
-end
 Direction = {}
 Direction.horisontal = {
       empty     = {0,0,0,0},
